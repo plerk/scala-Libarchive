@@ -15,7 +15,10 @@ trait Library extends com.sun.jna.Library {
 
 object Libarchive {
   val library = com.sun.jna.Native.loadLibrary(
-    sys.env.get("SCALA_LIBARCHIVE_PATH") match { case Some(s) => s; case _ => "archive" },
+    sys.env.get("SCALA_LIBARCHIVE_PATH") match {
+      case Some(s) => s
+      case _ => "archive"
+    },
     classOf[im.xor.libarchive.Library]
   ).asInstanceOf[im.xor.libarchive.Library]
 
