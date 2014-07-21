@@ -20,4 +20,14 @@ class ArchiveEntryTest extends FlatSpec {
     assert(ae.getPointer == com.sun.jna.Pointer.NULL)    
   }
 
+  "free" should "be safe to call more than once" in {
+  
+    val ae = ArchiveEntry()
+    
+    ae.free()
+    ae.free()
+    
+    assert(true)
+  }
+
 }
