@@ -1,7 +1,11 @@
 package im.xor.libarchive
 
 object Libarchive {
-  val library = com.sun.jna.Native.loadLibrary("archive", classOf[im.xor.libarchive.Library]).asInstanceOf[im.xor.libarchive.Library];
+  val library = com.sun.jna.Native.loadLibrary(
+    sys.env.get("SCALA_LIBARCHIVE_PATH") match { case Some(s) => s; case _ => "archive" },
+    classOf[im.xor.libarchive.Library]
+  ).asInstanceOf[im.xor.libarchive.Library]
+
   lazy val version_string = library.archive_version_string()
   lazy val version_number = library.archive_version_number()
 } 
