@@ -1,5 +1,18 @@
 package im.xor.libarchive
 
+trait Library extends com.sun.jna.Library {
+  def archive_version_number() : Int
+  def archive_version_string() : String
+  
+  def archive_entry_new(): ArchiveEntry
+  def archive_entry_clear(ae: ArchiveEntry) : Unit
+  def archive_entry_clone(ae: ArchiveEntry) : ArchiveEntry
+  def archive_entry_free(ae: ArchiveEntry) : Unit
+  
+  def archive_entry_pathname(ae: ArchiveEntry) : String
+  def archive_entry_copy_pathname(ae: ArchiveEntry, pathname: String) : Unit 
+}
+
 object Libarchive {
   val library = com.sun.jna.Native.loadLibrary(
     sys.env.get("SCALA_LIBARCHIVE_PATH") match { case Some(s) => s; case _ => "archive" },
@@ -32,3 +45,4 @@ class ArchiveEntry extends com.sun.jna.PointerType {
   
   override def finalize() = free()
 }
+
