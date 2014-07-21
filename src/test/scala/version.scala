@@ -1,12 +1,8 @@
 import org.scalatest.FlatSpec
 
-import com.sun.jna.Library
-import com.sun.jna.Native
-import im.xor.Libarchive
-
 class VersionTest extends FlatSpec {
 
-  val libarchive = Native.loadLibrary("archive", classOf[Libarchive]).asInstanceOf[Libarchive]
+  val libarchive = com.sun.jna.Native.loadLibrary("archive", classOf[im.xor.Libarchive]).asInstanceOf[im.xor.Libarchive]
 
   "archive_version_string" should "not be an empty string" in {
     assert(
