@@ -60,8 +60,8 @@ trait Freeable {
   def deallocate() : Unit
   def free() {
     if(this.getPointer != Pointer.NULL) {
-      this.deallocate();
-      this.setPointer(Pointer.NULL);
+      this.deallocate()
+      this.setPointer(Pointer.NULL)
     }
   }
 }
@@ -88,18 +88,25 @@ class ArchiveEntry extends PointerType with Freeable {
 class ArchiveException(val errno: Int, val message: String, val exception_type: Int) extends Throwable {
 }
 
-abstract class Archive extends PointerType with Freeable {
-  def wrapper(f: () => Int) = {
+abstract class Archive(warning_handler : Option[(ArchiveException) => Unit] = None ) extends PointerType with Freeable {
+  protected def wrapper(f: () => Int) = {
     val r = f()
     if(r <= Libarchive.FAILED) {
-      throw new ArchiveException(
-        Libarchive.library.archive_errno(this),
-        Libarchive.library.archive_error_string(this),
-        r 
-      )
+      throw this.create_exception(r)
     }
+    if(r == Libarchive.WARN)
+      warning_handler match {
+        case Some(f) => f(this.create_exception(r))
+        case _ => Unit
+      }
     r
   }
+  
+  private def create_exception(r: Int) = new ArchiveException(
+    Libarchive.library.archive_errno(this),
+    Libarchive.library.archive_error_string(this),
+    r 
+  )
 }
 
 class ArchiveRead extends Archive {
@@ -110,7 +117,6 @@ class ArchiveRead extends Archive {
   
   def next_header() = {
     val ae = ArchiveEntry()
-    /* TODO: if wrapper throws an exception, then ae isn't free()'d */
     val r = wrapper( () => Libarchive.library.archive_read_next_header2(this, ae) )
     if(r == Libarchive.EOF) {
       ae.free()
