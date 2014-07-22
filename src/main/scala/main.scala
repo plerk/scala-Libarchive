@@ -86,19 +86,18 @@ class ArchiveEntry extends PointerType with Freeable {
 }
 
 class ArchiveException(val errno: Int, val message: String, val exception_type: Int) extends Throwable {
+  override def toString() = "ArchiveException[" + this.message + "]"
 }
 
-abstract class Archive(warning_handler : Option[(ArchiveException) => Unit] = None ) extends PointerType with Freeable {
+abstract class Archive(warning_handler : Option[(ArchiveException) => Unit] = Some((e:ArchiveException) => System.err.println(e))) extends PointerType with Freeable {
   protected def wrapper(f: () => Int) = {
     val r = f()
-    if(r <= Libarchive.FAILED) {
-      throw this.create_exception(r)
+    (r, warning_handler) match {
+      case ( Libarchive.FAILED, _       ) => throw this.create_exception(r)
+      case ( Libarchive.FATAL,  _       ) => throw this.create_exception(r)
+      case ( Libarchive.WARN,   Some(h) ) => h(this.create_exception(r))
+      case ( _,                 _       ) => None
     }
-    if(r == Libarchive.WARN)
-      warning_handler match {
-        case Some(f) => f(this.create_exception(r))
-        case _ => Unit
-      }
     r
   }
   
