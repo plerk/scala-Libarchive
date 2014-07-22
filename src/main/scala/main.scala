@@ -1,5 +1,7 @@
 package im.xor.libarchive
 
+import com.sun.jna.{ Pointer, PointerType }
+
 trait Library extends com.sun.jna.Library {
   def archive_version_number() : Int
   def archive_version_string() : String
@@ -27,13 +29,13 @@ object Libarchive {
 } 
 
 trait Freeable {
-  def getPointer() : com.sun.jna.Pointer
-  def setPointer(ptr: com.sun.jna.Pointer) : Unit
+  def getPointer() : Pointer
+  def setPointer(ptr: Pointer) : Unit
   def deallocate() : Unit
   def free() {
-    if(this.getPointer != com.sun.jna.Pointer.NULL) {
+    if(this.getPointer != Pointer.NULL) {
       this.deallocate();
-      this.setPointer(com.sun.jna.Pointer.NULL);
+      this.setPointer(Pointer.NULL);
     }
   }
 }
@@ -43,7 +45,7 @@ object ArchiveEntry {
   /* TODO: archive_entry_new2 which takes an ArchiveRead or ArchiveWrite object as argument */
 }
 
-class ArchiveEntry extends com.sun.jna.PointerType with Freeable {
+class ArchiveEntry extends PointerType with Freeable {
 
   def clear() { Libarchive.library.archive_entry_clear(this) }
   override def clone() = Libarchive.library.archive_entry_clone(this)
