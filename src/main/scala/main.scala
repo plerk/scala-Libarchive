@@ -26,22 +26,28 @@ object Libarchive {
   lazy val version_number = library.archive_version_number()
 } 
 
+trait Freeable {
+  def getPointer() : com.sun.jna.Pointer
+  def setPointer(ptr: com.sun.jna.Pointer) : Unit
+  def deallocate() : Unit
+  def free() {
+    if(this.getPointer != com.sun.jna.Pointer.NULL) {
+      this.deallocate();
+      this.setPointer(com.sun.jna.Pointer.NULL);
+    }
+  }
+}
+
 object ArchiveEntry {
   def apply() = Libarchive.library.archive_entry_new()
   /* TODO: archive_entry_new2 which takes an ArchiveRead or ArchiveWrite object as argument */
 }
 
-class ArchiveEntry extends com.sun.jna.PointerType {
+class ArchiveEntry extends com.sun.jna.PointerType with Freeable {
 
   def clear() { Libarchive.library.archive_entry_clear(this) }
   override def clone() = Libarchive.library.archive_entry_clone(this)
-  def free() {
-    if(this.getPointer != com.sun.jna.Pointer.NULL)
-    {
-      Libarchive.library.archive_entry_free(this)
-      this.setPointer(com.sun.jna.Pointer.NULL);
-    }
-  }
+  def deallocate() = Libarchive.library.archive_entry_free(this)
   
   def pathname = Libarchive.library.archive_entry_pathname(this)
   def pathname_= (s:String) = Libarchive.library.archive_entry_copy_pathname(this,s)
