@@ -33,5 +33,12 @@ class ArchiveReadTest extends FlatSpec {
     
     ar.free()
   }
+  
+  "map" should "map archive entry objects" in {
+    val ar = ArchiveRead(foo_tar)
+    
+    assert((ar.map { _.pathname }) == List("foo/foo.txt", "foo/bar.txt", "foo/baz.txt"))
+  
+  }
 
 }

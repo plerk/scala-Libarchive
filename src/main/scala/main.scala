@@ -124,23 +124,17 @@ class ArchiveRead extends Archive {
       Some(ae)
     }
   }
-  
-  def read(f: (ArchiveRead, ArchiveEntry) => Boolean) : Boolean = {
+
+  /* Note: you only get to do this once */
+  def map[T](f: (ArchiveEntry) => T) : List[T] = {
     val ae = ArchiveEntry()
-    try {
-      while(true)
-      {
-        val r = wrapper( () => Libarchive.library.archive_read_next_header2(this, ae) )
-        if(r == Libarchive.EOF)
-          return true
-        else
-          if(! f(this, ae))
-            return false
-      }
-    } finally {
+    val r = wrapper( () => Libarchive.library.archive_read_next_header2(this, ae) )
+    if(r == Libarchive.EOF) {
       ae.free()
+      List[T]()
+    } else {
+      List[T](f(ae)) ++ this.map(f)
     }
-    return false /* never gets here but needed for compiler */
   }
   
   def open_filename(filename: String, block_size: Int = 10240) = {
