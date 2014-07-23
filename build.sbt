@@ -1,4 +1,4 @@
-name := "Libarchive"
+name := "im-xor-libarchive"
 
 version := "0.01"
 
